@@ -859,6 +859,15 @@ require('lazy').setup({
       --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
     end,
   },
+  {
+    'ziontee113/color-picker.nvim',
+    config = function()
+      require('color-picker').setup()
+      local opts = { noremap = true, silent = true }
+      vim.keymap.set('n', '<C-c>', '<cmd>PickColor<cr>', opts)
+      vim.keymap.set('i', '<C-c>', '<cmd>PickColorInsert<cr>', opts)
+    end,
+  },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
