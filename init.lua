@@ -252,6 +252,7 @@ require('lazy').setup({
     },
     config = function()
       require('nvim-tree').setup()
+      vim.keymap.set('n', '<leader>to', ':NvimTreeOpen<CR>', { desc = '[T]ree [O]pen' })
     end,
   },
   -- NOTE: Plugins can also be added by using a table,
@@ -344,6 +345,7 @@ require('lazy').setup({
           return vim.fn.executable 'make' == 1
         end,
       },
+      { 'nvim-telescope/telescope-file-browser.nvim' },
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
@@ -385,9 +387,18 @@ require('lazy').setup({
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
+          hijack_netrw = true,
+          mappings = {
+            ['i'] = {
+              -- your custom insert mode mappings
+            },
+            ['n'] = {
+              -- your custom normal mode mappings
+            },
+          },
         },
       }
-
+      require('telescope').load_extension 'file_browser'
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
@@ -404,6 +415,11 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+
+      vim.keymap.set('n', '<leader>ff', ':Telescope file_browser<CR>', { desc = '[F]ile [B]rowser' })
+
+      -- open file_browser with the path of the current buffer
+      vim.keymap.set('n', '<leader>ff', ':Telescope file_browser path=%:p:h select_buffer=true<CR>')
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -634,12 +650,12 @@ require('lazy').setup({
     lazy = false,
     keys = {
       {
-        '<leader>f',
+        '<leader>fb',
         function()
           require('conform').format { async = true, lsp_fallback = true }
         end,
         mode = '',
-        desc = '[F]ormat buffer',
+        desc = '[F]ormat [B]uffer',
       },
     },
     opts = {
