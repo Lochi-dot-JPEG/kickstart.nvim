@@ -1,4 +1,4 @@
--- Set <space> as the leader key
+-- Set <space> as the leader keyini
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
@@ -16,7 +16,7 @@ vim.g.have_nerd_font = true
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -57,7 +57,8 @@ vim.opt.splitbelow = true
 --  See `:help 'list'`
 --  and `:help 'listchars'`
 vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+--vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.listchars = { tab = '- ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
@@ -85,7 +86,7 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
+--vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
@@ -146,6 +147,102 @@ vim.opt.rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
+  {
+    'ThePrimeagen/harpoon',
+    branch = 'harpoon2',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    config = function()
+      local harpoon = require 'harpoon'
+      harpoon:setup {}
+
+      -- basic telescope configuration
+      local conf = require('telescope.config').values
+      local function toggle_telescope(harpoon_files)
+        local file_paths = {}
+        for _, item in ipairs(harpoon_files.items) do
+          table.insert(file_paths, item.value)
+        end
+
+        require('telescope.pickers')
+          .new({}, {
+            prompt_title = 'Harpoon',
+            finder = require('telescope.finders').new_table {
+              results = file_paths,
+            },
+            previewer = conf.file_previewer {},
+            sorter = conf.generic_sorter {},
+          })
+          :find()
+      end
+
+      vim.keymap.set('n', '<C-e>', function()
+        toggle_telescope(harpoon:list())
+      end, { desc = 'Open harpoon window' })
+
+      vim.keymap.set('n', '<leader>a', function()
+        harpoon:list():add()
+      end)
+      vim.keymap.set('n', '<leader>e', function()
+        harpoon.ui:toggle_quick_menu(harpoon:list())
+      end)
+      vim.keymap.set('n', '<leader>j', function()
+        harpoon:list():select(1)
+      end)
+      vim.keymap.set('n', '<leader>k', function()
+        harpoon:list():select(2)
+      end)
+      vim.keymap.set('n', '<leader>l', function()
+        harpoon:list():select(3)
+      end)
+      vim.keymap.set('n', '<leader>;', function()
+        harpoon:list():select(4)
+      end)
+
+      -- Toggle previous & next buffers stored within Harpoon list
+      vim.keymap.set('n', '<C-S-P>', function()
+        harpoon:list():prev()
+      end)
+      vim.keymap.set('n', '<C-S-N>', function()
+        harpoon:list():next()
+      end)
+    end,
+  },
+  {
+    'xiyaowong/transparent.nvim',
+    config = function()
+      require('transparent').setup { -- Optional, you don't have to run setup.
+        groups = { -- table: default groups
+          'Normal',
+          'NormalNC',
+          'Comment',
+          'Constant',
+          'Special',
+          'Identifier',
+          'Statement',
+          'PreProc',
+          'Type',
+          'Underlined',
+          'Todo',
+          'String',
+          'Function',
+          'Conditional',
+          'Repeat',
+          'Operator',
+          'Structure',
+          'LineNr',
+          'NonText',
+          'SignColumn',
+          'CursorLine',
+          'CursorLineNr',
+          'StatusLine',
+          'StatusLineNC',
+          'EndOfBuffer',
+        },
+        extra_groups = {}, -- table: additional groups that should be cleared
+        exclude_groups = {}, -- table: groups you don't want to clear
+      }
+    end,
+  },
   'preservim/vim-pencil',
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically-- Lua
   {
@@ -157,24 +254,13 @@ require('lazy').setup({
     },
   },
   {
-    'nvim-tree/nvim-tree.lua',
-    opts = {
-      sort = {
-        sorter = 'case_sensitive',
-      },
-      view = {
-        width = 30,
-      },
-      renderer = {
-        group_empty = true,
-      },
-      filters = {
-        dotfiles = true,
-      },
+    'startup-nvim/startup.nvim',
+    dependencies = {
+      'nvim-telescope/telescope.nvim',
+      'nvim-lua/plenary.nvim',
     },
     config = function()
-      require('nvim-tree').setup()
-      vim.keymap.set('n', '<leader>to', ':NvimTreeOpen<CR>', { desc = '[T]ree [O]pen' })
+      require('startup').setup()
     end,
   },
   -- NOTE: Plugins can also be added by using a table,
@@ -549,6 +635,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'gdtoolkit',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -773,7 +860,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'gdscript', 'godot_resource' },
+      ensure_installed = { 'bash', 'c', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
